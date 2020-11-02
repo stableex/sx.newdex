@@ -89,6 +89,13 @@ namespace newdex {
         return to_string(price);
     }
 
+    static string get_pair_symbol(uint64_t pair_id){
+        exchange_pair_t markets( "newdexpublic"_n, "newdexpublic"_n.value );
+        auto row = markets.get(pair_id, "NewdexLibrary: no such pair");
+
+        return row.pair_symbol;
+    }
+
     static asset get_amount_out(uint64_t pair_id, asset in, symbol sym_out) {
         buy_order_t ordertable( "newdexpublic"_n, pair_id );
         auto index = ordertable.get_index<"byprice"_n>();
