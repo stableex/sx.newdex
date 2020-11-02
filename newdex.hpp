@@ -1,32 +1,19 @@
 #pragma once
 
-#include <eosio/eosio.hpp>
-#include <eosio/system.hpp>
-#include <eosio/time.hpp>
 #include <eosio/asset.hpp>
+#include <eosio/singleton.hpp>
 
-#include <string>
 
-using namespace eosio;
-using namespace std;
+namespace newdex {
 
-class [[eosio::contract("newdexpublic")]] newdexpublic : public contract {
-public:
-    using contract::contract;
-
-    /**
-     * Construct a new contract given the contract name
-     *
-     * @param {name} receiver - The name of this contract
-     * @param {name} code - The code name of the action this contract is processing.
-     * @param {datastream} ds - The datastream used
-     */
-    newdexpublic( name receiver, name code, eosio::datastream<const char*> ds )
-        : contract( receiver, code, ds )
-    {}
-
-    [[eosio::action]]
-    void set( const uint64_t pair_id, const string pair_symbol, const double current_price );
+    using namespace std;
+    using namespace eosio;
+    using eosio::asset;
+    using eosio::symbol;
+    using eosio::name;
+    using eosio::singleton;
+    using eosio::multi_index;
+    using eosio::time_point_sec;
 
     const static uint8_t INT_BUY_LIMIT    = 1;
     const static uint8_t INT_SELL_LIMIT   = 2;
@@ -91,4 +78,35 @@ public:
     };
 
     typedef eosio::multi_index<"exchangepair"_n, exchange_pair> exchange_pair_t;
+
+    static uint8_t get_fee()
+    {
+        return 20;
+    }
+
+    static string price_to_string(double price){
+
+        return to_string(price);
+    }
+
+    static asset get_amount_out(uint64_t pair_id, asset in, symbol sym_out) {
+        buy_order_t ordertable( "newdexpublic"_n, pair_id );
+        auto index = ordertable.get_index<"byprice"_n>();
+
+        asset out{0, sym_out};
+        for(auto rowit = index.rbegin(); rowit!=index.rend() && in.amount>0; ++rowit){
+            if(in.amount - rowit->remain_convert.amount >= 0) {
+                in -= rowit->remain_convert;
+                out += rowit->remain_quantity;
+            }
+            else {
+                out.amount += in.amount * rowit->price;
+                in.amount = 0;
+            }
+            eosio::print("\n", rowit->order_id, " ", rowit->remain_quantity, " : ", rowit->remain_convert, " price: ", rowit->price);
+        }
+        if(in.amount > 0) return asset{0, sym_out};   //if there are not enough orders out fulfill our order
+
+        return out * (10000 - get_fee()) / 10000;
+    };
 };
