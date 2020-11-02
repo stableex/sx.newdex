@@ -15,6 +15,10 @@ namespace newdex {
     using eosio::multi_index;
     using eosio::time_point_sec;
 
+    // reference
+    const name id = "newdex"_n;
+    const name exchange = "newdexpublic"_n;
+
     const static uint8_t INT_BUY_LIMIT    = 1;
     const static uint8_t INT_SELL_LIMIT   = 2;
     const static uint8_t INT_BUY_MARKET   = 3;
@@ -76,12 +80,27 @@ namespace newdex {
 
         uint64_t primary_key() const { return pair_id; }
     };
-
     typedef eosio::multi_index<"exchangepair"_n, exchange_pair> exchange_pair_t;
+
+    // contains NewDex exchange pairs
+    struct [[eosio::table]] global_config {
+        uint64_t            global_id;
+        string              key;
+        string              value;
+        string              memo;
+
+        uint64_t primary_key() const { return global_id; }
+    };
+    typedef eosio::multi_index<"exchangepair"_n, global_config> global_config_t;
 
     static uint8_t get_fee()
     {
-        return 20;
+        // 2. status = 1
+        // 3. taker_fee = 20
+        // 4. maker_fee = 20
+        global_config_t global_config( "newdexpublic"_n, "newdexpublic"_n.value );
+        const string value = global_config.get(3, "NewdexLibrary: global config does not exists").value;
+        return std::stoi(value);
     }
 
     static string get_pair_symbol(uint64_t pair_id){

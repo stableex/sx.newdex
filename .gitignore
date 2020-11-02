@@ -2,3 +2,4 @@ stderr
 *.abi
 *.wasm
 nodeos
+.vscode
