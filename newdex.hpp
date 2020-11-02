@@ -29,11 +29,7 @@ namespace newdex {
      */
     struct ndx_symbol {
         name contract;
-        symbol symbol;
-
-        std::string to_string() const {
-            return contract.to_string() + "-" + symbol.code().to_string();
-        };
+        symbol sym;
     };
 
     // contains NewDex buy orders
