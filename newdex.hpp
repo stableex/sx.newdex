@@ -91,6 +91,24 @@ namespace newdex {
     typedef eosio::multi_index<"exchangepair"_n, exchange_pair> exchange_pair_t;
 
     // contains NewDex exchange pairs
+    struct [[eosio::table]] currency {
+        uint64_t        currency_id
+        string          chain
+        name            contract
+        symbol          sym
+        asset           balance
+        bool            is_quote_currency
+        uint8_t         in_fee
+        uint8_t         out_fee
+        uint64_t        ext1
+        uint64_t        ext2
+        string          extstr
+
+        uint64_t primary_key() const { return currency_id; }
+    };
+    typedef eosio::multi_index<"exchangepair"_n, currency> currency_t;
+
+    // contains NewDex exchange pairs
     struct [[eosio::table]] global_config {
         uint64_t            global_id;
         string              key;
