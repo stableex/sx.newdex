@@ -84,11 +84,6 @@ namespace newdex {
         return 20;
     }
 
-    static string price_to_string(double price){
-
-        return to_string(price);
-    }
-
     static string get_pair_symbol(uint64_t pair_id){
         exchange_pair_t markets( "newdexpublic"_n, "newdexpublic"_n.value );
         auto row = markets.get(pair_id, "NewdexLibrary: no such pair");
@@ -103,14 +98,13 @@ namespace newdex {
         asset out{0, sym_out};
         for(auto rowit = index.rbegin(); rowit!=index.rend() && in.amount>0; ++rowit){
             if(in.amount - rowit->remain_convert.amount >= 0) {
-                in -= rowit->remain_convert;
                 out += rowit->remain_quantity;
             }
             else {
                 out.amount += in.amount * rowit->price;
-                in.amount = 0;
             }
-            eosio::print("\n", rowit->order_id, " ", rowit->remain_quantity, " : ", rowit->remain_convert, " price: ", rowit->price);
+            in -= rowit->remain_convert;
+            eosio::print("\n", rowit->order_id, " ", rowit->remain_quantity, " : ", rowit->remain_convert, " price: ", rowit->price, " in: ", in, " out: ", out);
         }
         if(in.amount > 0) return asset{0, sym_out};   //if there are not enough orders out fulfill our order
 
