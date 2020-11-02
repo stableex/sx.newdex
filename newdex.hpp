@@ -106,7 +106,7 @@ namespace newdex {
 
         uint64_t primary_key() const { return currency_id; }
     };
-    typedef eosio::multi_index<"exchangepair"_n, currency> currency_t;
+    typedef eosio::multi_index<"currency"_n, currency> currency_t;
 
     // contains NewDex exchange pairs
     struct [[eosio::table]] global_config {
@@ -117,7 +117,7 @@ namespace newdex {
 
         uint64_t primary_key() const { return global_id; }
     };
-    typedef eosio::multi_index<"exchangepair"_n, global_config> global_config_t;
+    typedef eosio::multi_index<"globalconfig"_n, global_config> global_config_t;
 
     static uint8_t get_fee()
     {
