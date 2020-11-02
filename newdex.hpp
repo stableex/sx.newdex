@@ -92,17 +92,17 @@ namespace newdex {
 
     // contains NewDex exchange pairs
     struct [[eosio::table]] currency {
-        uint64_t        currency_id
-        string          chain
-        name            contract
-        symbol          sym
-        asset           balance
-        bool            is_quote_currency
-        uint8_t         in_fee
-        uint8_t         out_fee
-        uint64_t        ext1
-        uint64_t        ext2
-        string          extstr
+        uint64_t        currency_id;
+        string          chain;
+        name            contract;
+        symbol          sym;
+        asset           balance;
+        bool            is_quote_currency;
+        uint8_t         in_fee;
+        uint8_t         out_fee;
+        uint64_t        ext1;
+        uint64_t        ext2;
+        string          extstr;
 
         uint64_t primary_key() const { return currency_id; }
     };
