@@ -24,6 +24,18 @@ namespace newdex {
     const static uint8_t INT_BUY_MARKET   = 3;
     const static uint8_t INT_SELL_MARKET  = 4;
 
+    /**
+     * Custom Token struct
+     */
+    struct ndx_symbol {
+        name contract;
+        symbol symbol;
+
+        std::string to_string() const {
+            return contract.to_string() + "-" + symbol.code().to_string();
+        };
+    };
+
     // contains NewDex buy orders
     struct [[eosio::table]] order {
         uint64_t                order_id;
@@ -65,8 +77,8 @@ namespace newdex {
         uint64_t                    pair_id;
         uint8_t                     price_precision;
         uint8_t                     status;
-        eosio::extended_symbol      base_symbol;
-        eosio::extended_symbol      quote_symbol;
+        ndx_symbol                  base_symbol;
+        ndx_symbol                  quote_symbol;
         eosio::name                 manager;
         eosio::time_point_sec       list_time;
         string                      pair_symbol;
