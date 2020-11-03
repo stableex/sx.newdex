@@ -2,6 +2,7 @@
 
 #include <eosio/asset.hpp>
 #include <eosio/singleton.hpp>
+#include <math.h>
 
 
 namespace newdex {
@@ -67,6 +68,11 @@ namespace newdex {
         indexed_by< "byprice"_n, const_mem_fun<order, uint128_t, &order::get_price> >,
         indexed_by< "byname"_n, const_mem_fun<order, uint64_t, &order::get_name> >
     > buy_order_t;
+
+    typedef eosio::multi_index<"sellorder"_n, order,
+        indexed_by< "byprice"_n, const_mem_fun<order, uint128_t, &order::get_price> >,
+        indexed_by< "byname"_n, const_mem_fun<order, uint64_t, &order::get_name> >
+    > sell_order_t;
 
     // contains NewDex exchange pairs
     struct [[eosio::table]] exchange_pair {
@@ -136,23 +142,48 @@ namespace newdex {
         return row.pair_symbol;
     }
 
-    static asset get_amount_out(uint64_t pair_id, asset in, symbol sym_out) {
-        buy_order_t ordertable( "newdexpublic"_n, pair_id );
-        auto index = ordertable.get_index<"byprice"_n>();
+    static pair<asset, string> get_amount_out(uint64_t pair_id, asset in, symbol sym_out) {
 
         asset out{0, sym_out};
-        for(auto rowit = index.rbegin(); rowit!=index.rend() && in.amount>0; ++rowit){
-            if(in.amount - rowit->remain_convert.amount >= 0) {
-                out += rowit->remain_quantity;
-            }
-            else {
-                out.amount += in.amount * rowit->price;
-            }
-            in -= rowit->remain_convert;
-            eosio::print("\n", rowit->order_id, " ", rowit->remain_quantity, " : ", rowit->remain_convert, " price: ", rowit->price, " in: ", in, " out: ", out);
-        }
-        if(in.amount > 0) return asset{0, sym_out};   //if there are not enough orders out fulfill our order
+        string order = "sell-market";
+        exchange_pair_t markets( "newdexpublic"_n, "newdexpublic"_n.value );
+        auto row = markets.get(pair_id, "NewdexLibrary: no such pair");
+        float fee_adj = static_cast<float>((10000 - get_fee())) / 10000;
+        float price_adj = static_cast<float>(pow(10, sym_out.precision()))/pow(10, in.symbol.precision());
 
-        return out * (10000 - get_fee()) / 10000;
+        if(row.base_symbol.sym == in.symbol) {
+
+            buy_order_t ordertable( "newdexpublic"_n, pair_id );
+            auto index = ordertable.get_index<"byprice"_n>();
+
+            for(auto rowit = index.rbegin(); rowit!=index.rend() && in.amount>0; ++rowit){
+                if(in.amount - rowit->remain_convert.amount >= 0)
+                    out.amount += rowit->remain_quantity.amount * fee_adj;
+                else
+                    out.amount += in.amount * rowit->price * price_adj * fee_adj;
+
+                in -= rowit->remain_convert;
+            //    eosio::print("\n", rowit->order_id, " ", rowit->remain_quantity, " : ", rowit->remain_convert, " price: ", rowit->price, " in: ", in, " out: ", out);
+            }
+        }
+        else {
+
+            sell_order_t ordertable( "newdexpublic"_n, pair_id );
+            auto index = ordertable.get_index<"byprice"_n>();
+            order = "buy-market";
+
+            for(auto rowit = index.begin(); rowit!=index.end() && in.amount>0; ++rowit){
+                if(in.amount - rowit->remain_convert.amount >= 0)
+                    out.amount += rowit->remain_quantity.amount * fee_adj;
+                else
+                    out.amount += in.amount / rowit->price * price_adj * fee_adj;
+
+                in -= rowit->remain_convert;
+            //    eosio::print("\n", rowit->order_id, " ", rowit->remain_quantity, " : ", rowit->remain_convert, " price: ", rowit->price, " in: ", in, " out: ", out);
+            }
+        }
+        if(in.amount > 0) return { asset{0, sym_out}, order };   //if there are not enough orders out fulfill our order
+
+        return { out, order };
     };
 };
