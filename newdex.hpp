@@ -18,7 +18,8 @@ namespace newdex {
 
     // reference
     const name id = "newdex"_n;
-    const name exchange = "newdexpublic"_n;
+    const name code = "newdexpublic"_n;
+    const string description = "Newdex Converter";
 
     const static uint8_t INT_BUY_LIMIT    = 1;
     const static uint8_t INT_SELL_LIMIT   = 2;
@@ -127,6 +128,7 @@ namespace newdex {
 
     static uint8_t get_fee()
     {
+        //return 20;
         // 2. status = 1
         // 3. taker_fee = 20
         // 4. maker_fee = 20
