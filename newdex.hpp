@@ -26,6 +26,8 @@ namespace newdex {
     const static uint8_t INT_BUY_MARKET   = 3;
     const static uint8_t INT_SELL_MARKET  = 4;
 
+    const static uint8_t MAX_ORDERS = 10;        // place MAX_ORDERS orders at a time only - to fit in one transaction
+
     /**
      * Custom Token struct
      */
@@ -152,13 +154,14 @@ namespace newdex {
         auto row = markets.get(pair_id, "NewdexLibrary: no such pair");
         float fee_adj = static_cast<float>((10000 - get_fee())) / 10000;
         float price_adj = static_cast<float>(pow(10, sym_out.precision()))/pow(10, in.symbol.precision());
+        int orders = MAX_ORDERS;
 
         if(row.base_symbol.sym == in.symbol) {
 
             buy_order_t ordertable( "newdexpublic"_n, pair_id );
             auto index = ordertable.get_index<"byprice"_n>();
 
-            for(auto rowit = index.rbegin(); rowit!=index.rend() && in.amount>0; ++rowit){
+            for(auto rowit = index.rbegin(); rowit!=index.rend() && in.amount>0 && orders--; ++rowit){
                 if(in.amount - rowit->remain_convert.amount >= 0)
                     out.amount += rowit->remain_quantity.amount * fee_adj;
                 else
@@ -174,7 +177,7 @@ namespace newdex {
             auto index = ordertable.get_index<"byprice"_n>();
             order = "buy-market";
 
-            for(auto rowit = index.begin(); rowit!=index.end() && in.amount>0; ++rowit){
+            for(auto rowit = index.begin(); rowit!=index.end() && in.amount>0 && orders--; ++rowit){
                 if(in.amount - rowit->remain_convert.amount >= 0)
                     out.amount += rowit->remain_quantity.amount * fee_adj;
                 else
