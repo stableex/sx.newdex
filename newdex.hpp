@@ -130,7 +130,7 @@ namespace newdex {
 
     static uint8_t get_fee()
     {
-        //return 20;
+        // return 15;
         // 2. status = 1
         // 3. taker_fee = 20
         // 4. maker_fee = 20
@@ -158,6 +158,7 @@ namespace newdex {
 
         if(row.base_symbol.sym == in.symbol) {
 
+            check(row.quote_symbol.sym == sym_out, "NewdexLibrary: wrong pair_id");
             buy_order_t ordertable( "newdexpublic"_n, pair_id );
             auto index = ordertable.get_index<"byprice"_n>();
 
@@ -168,11 +169,12 @@ namespace newdex {
                     out.amount += in.amount * rowit->price * price_adj * fee_adj;
 
                 in -= rowit->remain_convert;
-            //    eosio::print("\n", rowit->order_id, " ", rowit->remain_quantity, " : ", rowit->remain_convert, " price: ", rowit->price, " in: ", in, " out: ", out);
+                // eosio::print("\n", rowit->order_id, " ", rowit->remain_quantity, " : ", rowit->remain_convert, " price: ", rowit->price, " in: ", in, " out: ", out);
             }
         }
         else {
 
+            check(row.base_symbol.sym == sym_out && row.quote_symbol.sym == in.symbol, "NewdexLibrary: wrong pair_id");
             sell_order_t ordertable( "newdexpublic"_n, pair_id );
             auto index = ordertable.get_index<"byprice"_n>();
             order = "buy-market";
@@ -184,9 +186,10 @@ namespace newdex {
                     out.amount += in.amount / rowit->price * price_adj * fee_adj;
 
                 in -= rowit->remain_convert;
-            //    eosio::print("\n", rowit->order_id, " ", rowit->remain_quantity, " : ", rowit->remain_convert, " price: ", rowit->price, " in: ", in, " out: ", out);
+                // eosio::print("\n", rowit->order_id, " ", rowit->remain_quantity, " : ", rowit->remain_convert, " price: ", rowit->price, " in: ", in, " out: ", out);
             }
         }
+        // eosio::print("\n  in left: ", in);
         if(in.amount > 0) return { asset{0, sym_out}, order };   //if there are not enough orders out fulfill our order
 
         return { out, order };
