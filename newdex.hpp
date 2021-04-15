@@ -130,7 +130,7 @@ namespace newdex {
 
     static uint8_t get_fee()
     {
-        // return 15;
+        return 15;          //for some reason actual charged fee is 15 (not 20 as in config)
         // 2. status = 1
         // 3. taker_fee = 20
         // 4. maker_fee = 20
@@ -152,8 +152,8 @@ namespace newdex {
         string order = "sell-market";
         exchange_pair_t markets( "newdexpublic"_n, "newdexpublic"_n.value );
         auto row = markets.get(pair_id, "NewdexLibrary: no such pair");
-        float fee_adj = static_cast<float>((10000 - get_fee())) / 10000;
-        float price_adj = static_cast<float>(pow(10, sym_out.precision()))/pow(10, in.symbol.precision());
+        double fee_adj = static_cast<double>((10000 - get_fee())) / 10000;
+        double price_adj = static_cast<double>(pow(10, sym_out.precision()))/pow(10, in.symbol.precision());
         int orders = MAX_ORDERS;
 
         if(row.base_symbol.sym == in.symbol) {
