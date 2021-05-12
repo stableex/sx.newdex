@@ -26,7 +26,7 @@ namespace newdex {
     const static uint8_t INT_BUY_MARKET   = 3;
     const static uint8_t INT_SELL_MARKET  = 4;
 
-    const static uint8_t MAX_ORDERS = 10;        // place MAX_ORDERS orders at a time only - to fit in one transaction
+    const static uint8_t MAX_ORDERS = 20;        // place MAX_ORDERS orders at a time only - to fit in one transaction
 
     /**
      * Custom Token struct
