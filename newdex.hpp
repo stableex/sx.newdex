@@ -27,6 +27,7 @@ namespace newdex {
     const static uint8_t INT_SELL_MARKET  = 4;
 
     const static uint8_t MAX_ORDERS = 20;        // place MAX_ORDERS orders at a time only - to fit in one transaction
+    const static uint8_t VIP_LEVEL = 0;
 
     /**
      * Custom Token struct
@@ -130,7 +131,7 @@ namespace newdex {
 
     static uint8_t get_fee()
     {
-        return 15;          //for some reason actual charged fee is 15 (not 20 as in config)
+        return 20 - VIP_LEVEL;
         // 2. status = 1
         // 3. taker_fee = 20
         // 4. maker_fee = 20
